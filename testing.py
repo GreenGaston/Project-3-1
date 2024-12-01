@@ -53,30 +53,30 @@ import numpy as np
 
 
 
-# display the whole mesh
-mesh = o3d.io.read_triangle_mesh("dragon.ply")
-mesh.compute_vertex_normals()
-# make the mesh gray
+# #display the whole mesh
+# mesh = o3d.io.read_triangle_mesh("dragon.ply")
+# mesh.compute_vertex_normals()
+# # make the mesh gray
 
-mesh.paint_uniform_color([237/255, 202/255, 29/255])
-o3d.visualization.draw_geometries([mesh])
-
-
+# mesh.paint_uniform_color([237/255, 202/255, 29/255])
+# o3d.visualization.draw_geometries([mesh])
 
 
 
-# alpha 
 
-pcd = o3d.io.read_point_cloud("dragon.ply") # for all points
 
-# pcd = mesh.sample_points_poisson_disk(number_of_points=15000)
-# o3d.visualization.draw_geometries([pcd])
-alpha = 3.5
-print(f"alpha={alpha:.3f}")
-mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
-mesh.compute_vertex_normals()
-mesh.paint_uniform_color([237/255, 202/255, 29/255])
-o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
+#alpha 
+
+# pcd = o3d.io.read_point_cloud("dragon.ply") # for all points
+
+# #pcd = mesh.sample_points_poisson_disk(number_of_points=15000)
+# #o3d.visualization.draw_geometries([pcd])
+# alpha = 3.5
+# print(f"alpha={alpha:.3f}")
+# mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
+# mesh.compute_vertex_normals()
+# mesh.paint_uniform_color([237/255, 202/255, 29/255])
+# o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
 
 # pcd2= mesh.sample_points_poisson_disk(number_of_points=15000)
@@ -84,3 +84,23 @@ o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 # distances = pcd.compute_point_cloud_distance(pcd2)
 # mean_distance = np.mean(distances)
 # print(f"mean distance: {mean_distance:.3f}")
+
+
+#ball pivoting
+
+pcd = o3d.io.read_point_cloud("dragon.ply")
+
+#Techniques to reduce nr of points used.
+# downsample_factor = 0.5  # Keep 10% of the original points (adjust as needed)
+# pcd = pcd.random_down_sample(downsample_factor)
+
+# #voxel_size = 0.01  # Larger voxel size for faster processing (adjust as needed)
+# #pcd = pcd.voxel_down_sample(voxel_size=voxel_size)
+
+pcd.estimate_normals()
+radii = [0.075, 0.125, 0.225]
+print("radii: ", radii)
+mesh_bpa = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector(radii))
+mesh_bpa.compute_vertex_normals()
+mesh_bpa.paint_uniform_color([237 / 255, 202 / 255, 29 / 255])
+o3d.visualization.draw_geometries([mesh_bpa], mesh_show_back_face=True)
