@@ -25,30 +25,30 @@ import numpy as np
 
 
 # poisson training 
-pcd = o3d.io.read_point_cloud("dragon.ply")
-pcd.estimate_normals()
+# pcd = o3d.io.read_point_cloud("dragon.ply")
+# pcd.estimate_normals()
 
-# Perform Poisson surface reconstruction
-# The depth parameter controls the resolution of the output mesh
-# A depth of around 12 to 13 typically yields millions of vertices
-print('Performing Poisson surface reconstruction...')
-mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=12)
-mesh.compute_vertex_normals()
+# # Perform Poisson surface reconstruction
+# # The depth parameter controls the resolution of the output mesh
+# # A depth of around 12 to 13 typically yields millions of vertices
+# print('Performing Poisson surface reconstruction...')
+# mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=12)
+# mesh.compute_vertex_normals()
 
-yellow_color = np.array([[237/255, 202/255, 29/255] for _ in range(len(mesh.vertices))])
-mesh.vertex_colors = o3d.utility.Vector3dVector(yellow_color)
+# yellow_color = np.array([[237/255, 202/255, 29/255] for _ in range(len(mesh.vertices))])
+# mesh.vertex_colors = o3d.utility.Vector3dVector(yellow_color)
 
-# Calculate number of vertices
-num_vertices = len(mesh.vertices)
-print(f'Number of vertices in the mesh: {num_vertices}')
+# # Calculate number of vertices
+# num_vertices = len(mesh.vertices)
+# print(f'Number of vertices in the mesh: {num_vertices}')
 
-# Optionally, you can clean the mesh by removing low-density vertices if needed
-# This will remove some of the less reliable parts of the mesh
-vertices_to_remove = densities < np.quantile(densities, 0.01)
-mesh.remove_vertices_by_mask(vertices_to_remove)
+# # Optionally, you can clean the mesh by removing low-density vertices if needed
+# # This will remove some of the less reliable parts of the mesh
+# vertices_to_remove = densities < np.quantile(densities, 0.01)
+# mesh.remove_vertices_by_mask(vertices_to_remove)
 
-# Visualize the resulting mesh
-o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
+# # Visualize the resulting mesh
+# o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
 # # write the mesh to a file
 # o3d.io.write_triangle_mesh("mesh_poisson_chair.ply", mesh)
@@ -77,12 +77,12 @@ o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
 # pcd = mesh.sample_points_poisson_disk(number_of_points=15000)
 # o3d.visualization.draw_geometries([pcd])
-alpha = 3.5
-print(f"alpha={alpha:.3f}")
-mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
-mesh.compute_vertex_normals()
-mesh.paint_uniform_color([237/255, 202/255, 29/255])
-o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
+# alpha = 3.5
+# print(f"alpha={alpha:.3f}")
+# mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
+# mesh.compute_vertex_normals()
+# mesh.paint_uniform_color([237/255, 202/255, 29/255])
+# o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
 
 # pcd2= mesh.sample_points_poisson_disk(number_of_points=15000)
@@ -113,29 +113,38 @@ o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
 def poisson_reconstruction(input_file, output_file, depth):
     pcd = o3d.io.read_point_cloud(input_file)
-    pcd.estimate_normals()
-    mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=depth)
 
-    # Optionally clean the mesh by removing low-density vertices
+    pcd.estimate_normals()
+
+
+    print('Performing Poisson surface reconstruction...')
+    mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=depth)
+    mesh.compute_vertex_normals()
+
+    yellow_color = np.array([[237/255, 202/255, 29/255] for _ in range(len(mesh.vertices))])
+    mesh.vertex_colors = o3d.utility.Vector3dVector(yellow_color)
+
+    # Calculate number of verticess
+    num_vertices = len(mesh.vertices)
+    print(f'Number of vertices in the mesh: {num_vertices}')
+
+
     vertices_to_remove = densities < np.quantile(densities, 0.01)
     mesh.remove_vertices_by_mask(vertices_to_remove)
 
-    num_vertices = len(mesh.vertices)
-    print(f"Number of vertices in the mesh: {num_vertices}")
-    o3d.io.write_triangle_mesh(output_file, mesh)
-    mesh.paint_uniform_color([237 / 255, 202 / 255, 29 / 255])
+    # Visualize the resulting mesh
     o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
-def alpha_shape_reconstruction(input_file, output_file, alpha):
 
-    print("alpha= ", alpha)
+def alpha_shape_reconstruction(input_file, output_file, alpha):
     pcd = o3d.io.read_point_cloud(input_file)
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
     mesh.compute_vertex_normals()
-    o3d.io.write_triangle_mesh(output_file, mesh)
-    mesh.paint_uniform_color([237 / 255, 202 / 255, 29 / 255])
-    o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
+    yellow_color = np.array([[237/255, 202/255, 29/255] for _ in range(len(mesh.vertices))])
 
+    mesh.vertex_colors = o3d.utility.Vector3dVector(yellow_color)
+
+    o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
 def ball_pivoting_reconstruction(input_file, output_file, radii):
     #Techniques to reduce nr of points used.
