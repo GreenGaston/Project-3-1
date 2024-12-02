@@ -54,7 +54,7 @@ import numpy as np
 
 
 # display the whole mesh
-mesh = o3d.io.read_triangle_mesh("dragon.ply")
+mesh = o3d.io.read_triangle_mesh("output.ply")
 mesh.compute_vertex_normals()
 # make the mesh gray
 
@@ -67,17 +67,19 @@ o3d.visualization.draw_geometries([mesh])
 
 # alpha 
 
-pcd = o3d.io.read_point_cloud("dragon.ply") # for all points
+pcd = o3d.io.read_point_cloud("output.ply") # for all points
 
 # pcd = mesh.sample_points_poisson_disk(number_of_points=15000)
 # o3d.visualization.draw_geometries([pcd])
-alpha = 3.5
+alpha = 1
 print(f"alpha={alpha:.3f}")
 mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
 mesh.compute_vertex_normals()
 mesh.paint_uniform_color([237/255, 202/255, 29/255])
 o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
+##save the mash as ply file
+o3d.io.write_triangle_mesh("dragonoutput.ply", mesh)
 
 # pcd2= mesh.sample_points_poisson_disk(number_of_points=15000)
 # # compute the mean distance between the sampled points of the 2 meshes

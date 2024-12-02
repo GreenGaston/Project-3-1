@@ -39,17 +39,19 @@ def surface_area_difference(mesh1, mesh2):
 
 def compare_models(file1, file2):
     mesh1 = load_model(file1)
-    mesh2 = load_model(file2)
+    mesh2 = add_noise(load_model(file2), 0.0006)
 
     comparison_metrics = {
         'hausdorff_distance': hausdorff_distance(mesh1, mesh2),
         'chamfer_distance': chamfer_distance(mesh1, mesh2),
-        'surface_area_difference': surface_area_difference(mesh1, mesh2)
+        'surface_area_difference': surface_area_difference(mesh1, mesh2),
+        'volume_overlap': volume_overlap(mesh1, mesh2)
     }
 
     return comparison_metrics
 
 def volume_overlap(mesh1, mesh2):
+    return True
     volume1 = mesh1.volume
     volume2 = mesh2.volume
 
@@ -64,9 +66,20 @@ def volume_overlap(mesh1, mesh2):
 
     return overlap_ratio
 
+def add_noise(mesh, noise_level):
+    #noise level is an integer describing the range from 0 to noise_level
+    #to be added uniformly to each vertex
+    for i in range(len(mesh.vertices)):
+        noise = 2 * noise_level * np.random.rand(3) - noise_level
+
+
+        mesh.vertices[i] += noise
+
+    return mesh
 if __name__ == '__main__':
-    file1 = 'model1.ply'
-    file2 = 'model2.ply'
+    file1 = 'xyzrgb_dragon.ply'
+    #make a noisy copy of the original mesh
+    file2 = 'xyzrgb_dragon.ply'
     
     metrics = compare_models(file1, file2)
     print(f"Comparison metrics: {metrics}")

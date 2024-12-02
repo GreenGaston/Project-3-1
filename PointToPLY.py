@@ -1,6 +1,6 @@
 from scapy.all import wrpcap, Ether, Raw
 import struct
-
+import csv
 def points_to_pcap(points, filename):
     #function for creating test pcap file
     packets = []
@@ -41,10 +41,34 @@ def pcap_to_ply(pcap_filename, ply_filename):
 
     points_to_ply(points, ply_filename)
 
+def read_csv_to_points(csv_filename):
+    """
+    Reads a CSV file where columns 1, 2, and 3 are x, y, and z coordinates, respectively.
+
+    :param csv_filename: The name of the CSV file.
+    :return: A list of tuples, where each tuple contains three floats (x, y, z).
+    """
+    test=False
+    points = []
+    with open(csv_filename, 'r') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        for row in csv_reader:
+            #skip first row
+            if test==False:
+                test=True
+                continue
+            if len(row) >= 3:
+                try:
+                    x = float(row[1])
+                    y = float(row[2])
+                    z = float(row[3])
+                    points.append((x, y, z))
+                except ValueError as e:
+                    print(f"Error converting row to floats: {row} - {e}")
+    return points
+
+
 if __name__ == '__main__':
     # Example usage:
-    points = [(1.0, 2.0, 3.0), (4.0, 5.0, 6.0), (7.0, 8.0, 9.0)]
-    points_to_pcap(points, 'input.pcap')
-    pcap_filename = 'input.pcap'
-    ply_filename = 'output.ply'
-    pcap_to_ply(pcap_filename, ply_filename)
+    points = read_csv_to_points('output.csv')
+    points_to_ply(points, 'output.ply')
