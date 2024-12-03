@@ -1,6 +1,6 @@
 import open3d as o3d
 import numpy as np
-
+from statistical_outlier_removal import apply_statistical_outlier_removal
 
 
 # pcd = o3d.io.read_point_cloud("dragon.ply")
@@ -85,7 +85,7 @@ import numpy as np
 # o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
 ##save the mash as ply file
-o3d.io.write_triangle_mesh("dragonoutput.ply", mesh)
+# o3d.io.write_triangle_mesh("dragonoutput.ply", mesh)
 
 # pcd2= mesh.sample_points_poisson_disk(number_of_points=15000)
 # # compute the mean distance between the sampled points of the 2 meshes
@@ -173,7 +173,8 @@ def main():
     poisson_output = "mesh_poisson.ply"
     alpha_output = "mesh_poisson.ply"
     ballpiv_output = "mesh_poisson.ply"
-    
+    apply_statistical_outlier_removal(input_file, poisson_output, nb_neighbors=30, std_ratio=1.5)
+
     poisson_reconstruction(input_file, poisson_output, depth)
     alpha_shape_reconstruction(input_file, alpha_output, alpha)
     ball_pivoting_reconstruction(input_file, ballpiv_output, radii)
