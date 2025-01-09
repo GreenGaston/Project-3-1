@@ -76,10 +76,57 @@ def add_noise(mesh, noise_level):
         mesh.vertices[i] += noise
 
     return mesh
+
+def has_edges(ply_filename):
+    try:
+        with open(ply_filename, 'r', encoding='utf-8') as ply_file:
+            for line in ply_file:
+                if line.startswith('element edge'):
+                    return True
+              
+    except UnicodeDecodeError:
+        # Try a different encoding if utf-8 fails
+        with open(ply_filename, 'r', encoding='latin-1') as ply_file:
+            for line in ply_file:
+                if line.startswith('element edge'):
+                    return True
+                
+    return False
+
+def has_faces(ply_filename):
+    """
+    Checks if a PLY file contains faces.
+
+    :param ply_filename: The name of the PLY file.
+    :return: True if the PLY file contains faces, False otherwise.
+    """
+    try:
+        with open(ply_filename, 'r', encoding='utf-8') as ply_file:
+            for line in ply_file:
+                if line.startswith('element face'):
+                    return True
+                if line.startswith('end_header'):
+                    break
+    except UnicodeDecodeError:
+        # Try a different encoding if utf-8 fails
+        with open(ply_filename, 'r', encoding='latin-1') as ply_file:
+            for line in ply_file:
+                if line.startswith('element face'):
+                    return True
+                if line.startswith('end_header'):
+                    break
+    return False
+
 if __name__ == '__main__':
     file1 = 'xyzrgb_dragon.ply'
-    #make a noisy copy of the original mesh
-    file2 = 'xyzrgb_dragon.ply'
-    
-    metrics = compare_models(file1, file2)
-    print(f"Comparison metrics: {metrics}")
+    #reconstruct the dragon with all methods
+    mesh=load_model(file1)
+    #randomly select 10% of the points and remove them
+    mesh.remove_vertices(np.random.choice(len(mesh.vertices), int(len(mesh.vertices)*0.1), replace=False))
+    #save the mesh
+    mesh.export('xyzrgb_dragon_removed.ply')
+    file2 = 'xyzrgb_dragon_removed.ply'
+    #comparison_metrics = compare_models(file1, file2)
+
+    #reconstruct the dragon with all methods
+    mesh=load_model(file2)

@@ -1,7 +1,6 @@
 import open3d as o3d
 import numpy as np
-
-
+import math
 
 # pcd = o3d.io.read_point_cloud("dragon.ply")
 # pcd.paint_uniform_color([237/255, 202/255, 29/255])
@@ -85,7 +84,7 @@ import numpy as np
 # o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
 ##save the mash as ply file
-o3d.io.write_triangle_mesh("dragonoutput.ply", mesh)
+# o3d.io.write_triangle_mesh("dragonoutput.ply", mesh)
 
 # pcd2= mesh.sample_points_poisson_disk(number_of_points=15000)
 # # compute the mean distance between the sampled points of the 2 meshes
@@ -166,7 +165,7 @@ def ball_pivoting_reconstruction(input_file, output_file, radii):
     o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
 def main():
-    input_file = "dragon.ply"
+    input_file = "xyzrgb_dragon.ply"
     depth = 12 #optimal for poisson for dragon
     alpha = 3.5 #optimal for alpha for dragon
     radii = [0.075, 0.125, 0.225] #good setting for ball pivoting for dragon
@@ -179,8 +178,7 @@ def main():
     ball_pivoting_reconstruction(input_file, ballpiv_output, radii)
     #can also add output files to other methods if necessary.
 
-if __name__ == "__main__":
-    main()
+
 
 
 #ball pivoting
@@ -245,6 +243,19 @@ def ball_pivoting_reconstruction(input_file, output_file, radii):
     mesh.paint_uniform_color([237 / 255, 202 / 255, 29 / 255])
     o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
+
+
+
+def convert_point_to_global_space(point, point_of_measurement):
+    
+    # Convert point and point_of_measurement to numpy arrays
+    point = np.array(point)
+    point_of_measurement = np.array(point_of_measurement)
+    
+    # Apply the translation
+    global_point = point + point_of_measurement
+    
+    return global_point
 def main():
     input_file = "dragon.ply"
     depth = 12 #optimal for poisson for dragon
@@ -260,4 +271,24 @@ def main():
     #can also add output files to other methods if necessary.
 
 if __name__ == "__main__":
-    main()
+    #main()
+    #in this folder there are 9 csv files called outpu1.csv output2.csv etc
+    #of which the 2nd 3rd and 4th are the x y z coordinates of the points
+    #file one has coordinates 0,0,0
+    #each next file has an x+0.10
+    #convert these points to global space and visualize them
+    points = []
+    for i in range(1, 10):
+        
+        filename = f"output{i}.csv"
+        print(f"Reading file {filename}")
+        #many rows but skip the first one and we want the 2nd 3rd and 4th column
+        data = np.loadtxt(filename, delimiter=',', skiprows=1, usecols=(1, 2, 3))
+        #convert the points
+        points.append(convert_point_to_global_space(data, [0+i*0.5,0,0+i*0.866]))
+    #visualize the points using poisoon reconstruction
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(np.concatenate(points))
+    o3d.visualization.draw_geometries([pcd])
+
+
