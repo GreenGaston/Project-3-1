@@ -1,6 +1,8 @@
 import open3d as o3d
 import numpy as np
 import math
+from statistical_outlier_removal import apply_statistical_outlier_removal
+
 
 # pcd = o3d.io.read_point_cloud("dragon.ply")
 # pcd.paint_uniform_color([237/255, 202/255, 29/255])
@@ -172,7 +174,8 @@ def main():
     poisson_output = "mesh_poisson.ply"
     alpha_output = "mesh_poisson.ply"
     ballpiv_output = "mesh_poisson.ply"
-    
+    apply_statistical_outlier_removal(input_file, poisson_output, nb_neighbors=30, std_ratio=1.5)
+
     poisson_reconstruction(input_file, poisson_output, depth)
     alpha_shape_reconstruction(input_file, alpha_output, alpha)
     ball_pivoting_reconstruction(input_file, ballpiv_output, radii)
