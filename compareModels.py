@@ -52,6 +52,7 @@ def compare_models(file1, file2):
 
 def volume_overlap(mesh1, mesh2):
     return True
+    #currently disabled because models arent watertight
     volume1 = mesh1.volume
     volume2 = mesh2.volume
 

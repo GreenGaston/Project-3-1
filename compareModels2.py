@@ -153,19 +153,39 @@ def TestAllMethods(filename):
 
 import numpy as np
 
-def convert_point_to_global_space(point, point_of_measurement, angle):
+def convert_point_to_global_space(point, point_of_measurement, angle_x, angle_y, angle_z):
 
-    # Convert angle to radians
-    angle_rad = np.radians(angle)
+
     
-    # Define the rotation matrix for rotation around the Z-axis
-    rotation_matrix = np.array([
-        [np.cos(angle_rad), -np.sin(angle_rad), 0],
-        [np.sin(angle_rad), np.cos(angle_rad), 0],
-        [0, 0, 1]
+
+    angle_x_rad = np.radians(angle_x)
+    angle_y_rad = np.radians(angle_y)
+    angle_z_rad = np.radians(angle_z)
+    
+    # Define the rotation matrix for rotation around the X-axis
+    rotation_matrix_x = np.array([
+        [1, 0, 0],
+        [0, np.cos(angle_x_rad), -np.sin(angle_x_rad)],
+        [0, np.sin(angle_x_rad), np.cos(angle_x_rad)]
     ])
     
-    # Convert point and point_of_measurement to numpy arrays
+    # Define the rotation matrix for rotation around the Y-axis
+    rotation_matrix_y = np.array([
+        [np.cos(angle_y_rad), 0, np.sin(angle_y_rad)],
+        [0, 1, 0],
+        [-np.sin(angle_y_rad), 0, np.cos(angle_y_rad)]
+    ])
+    
+    # Define the rotation matrix for rotation around the Z-axis
+    rotation_matrix_z = np.array([
+        [np.cos(angle_z_rad), -np.sin(angle_z_rad), 0],
+        [np.sin(angle_z_rad), np.cos(angle_z_rad), 0],
+        [0, 0, 1]
+    ])
+    # Convert point and point_of_measurement to numpy 
+    
+    rotation_matrix = np.dot(rotation_matrix_z, np.dot(rotation_matrix_y, rotation_matrix_x))
+
     point = np.array(point)
     point_of_measurement = np.array(point_of_measurement)
     
