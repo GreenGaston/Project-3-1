@@ -123,7 +123,7 @@ def visualize(original_mesh, reconstructed_mesh):
 def TestAllMethods(filename):
     # Load and process
     original_mesh = load_model(filename)
-    point_cloud = sample_point_cloud(original_mesh)
+    ##point_cloud = sample_point_cloud(original_mesh,)
 
     poisson_re=poisson_reconstruction(filename, 13)
     alpha_shape_re=alpha_shape_reconstruction(filename, 0.05)
@@ -148,9 +148,6 @@ def TestAllMethods(filename):
     o3d.visualization.draw_geometries([poisson_re])
     o3d.visualization.draw_geometries([alpha_shape_re])
     o3d.visualization.draw_geometries([ball_pivoting_re])
-    
-def testDenoiseMethods(filename):
-    original_mesh = load_model(filename)
 
 
 import numpy as np
