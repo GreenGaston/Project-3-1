@@ -1,93 +1,82 @@
-
-
 # file for applying noise to a mesh, denoising it, and comparing the results
 
 import open3d as o3d
 import numpy as np
+import copy
 
 from PCA import pca_denoising
 from statistical_outlier_removal import apply_statistical_outlier_removal
 from statistical_outlier_removal import apply_normal_deviation_removal
 
-def simulate_scanning_error(mesh_file, distance_threshold=0.01):
-    """
-    Simulate a scanning error by generating a random plane that intersects with the mesh
-    and selecting all points close to that plane in the same random direction.
+def simulate_scanning_error(pcd, distance_threshold=0.01, noise_level=0.02):
 
-    Parameters:
-    - mesh_file: Path to the input mesh file.
-    - distance_threshold: Distance threshold to select points close to the plane.
+    if not isinstance(pcd, o3d.geometry.PointCloud):
+        raise TypeError("Input must be a PointCloud")
 
-    Returns:
-    - modified_pcd: The modified point cloud with simulated scanning error.
-
-
-    not completely applicable as scans dont cause both sides of the mesh to be affected
-    but it will have to do for now
-    """
-    # Load the mesh
-    print(f"Loading mesh: {mesh_file}")
-    mesh = o3d.io.read_triangle_mesh(mesh_file)
-    pcd = mesh.sample_points_uniformly(number_of_points=50000)
+    # Create a copy of the point cloud to avoid modifying the original
+    noisy_pcd = copy.deepcopy(pcd)
 
     # Generate a random plane
-    plane_normal = np.random.rand(3)
+    plane_normal = np.random.rand(3) - 0.5
     plane_normal /= np.linalg.norm(plane_normal)
-    plane_point = np.mean(np.asarray(pcd.points), axis=0)  # Use the centroid of the point cloud as a point on the plane
+    plane_point = np.random.rand(3) - 0.5
+
+    # Calculate distances of points to the plane
+    points = np.asarray(noisy_pcd.points)
+    distances = np.dot(points - plane_point, plane_normal)
 
     # Select points close to the plane
-    print("Selecting points close to the plane...")
-    points = np.asarray(pcd.points)
-    distances = np.dot(points - plane_point, plane_normal)
-    indices_to_select = np.where(np.abs(distances) < distance_threshold)[0]
+    mask = np.abs(distances) < distance_threshold
+    noisy_points = points[mask]
 
-    # Simulate scanning error by perturbing the selected points
-    error_direction = plane_normal * distance_threshold
-    points[indices_to_select] += error_direction
 
-    # Create a new point cloud with the modified points
-    modified_pcd = o3d.geometry.PointCloud()
-    modified_pcd.points = o3d.utility.Vector3dVector(points)
-    modified_pcd.normals = pcd.normals  # Keep the original normals
 
-    print("Scanning error simulation complete.")
-    return modified_pcd
+    # Apply noise to the selected points
+    noise = np.random.normal(scale=distance_threshold, size=noisy_points.shape)
+    points[mask] += noise
 
-def apply_random_noise(mesh, noise_level=0.02):
+    # Update the points in the copied point cloud
+    noisy_pcd.points = o3d.utility.Vector3dVector(points)
+
+    return noisy_pcd
+
+def apply_random_noise(pcd, noise_level=0.02):
     """
-    Apply random noise to the vertices of a mesh.
+    Apply random noise to the points of a point cloud.
 
     Parameters:
-    - mesh: The input mesh.
+    - pcd: The input point cloud.
     - noise_level: The maximum magnitude of the noise to be added.
 
     Returns:
-    - noisy_mesh: The mesh with random noise added to its vertices.
+    - noisy_pcd: The point cloud with random noise added to its points.
     """
-    noisy_mesh = mesh.copy()
-    vertices = np.asarray(noisy_mesh.vertices)
-    noise = 2 * noise_level * np.random.rand(*vertices.shape) - noise_level
-    noisy_mesh.vertices = o3d.utility.Vector3dVector(vertices + noise)
-    return noisy_mesh
+    if not isinstance(pcd, o3d.geometry.PointCloud):
+        raise TypeError("Input must be a PointCloud")
 
-def salt_and_pepper_noise(mesh, noise_level=0.02):
+    noisy_pcd = copy.deepcopy(pcd)
+    points = np.asarray(noisy_pcd.points)
+    noise = 2 * noise_level * np.random.rand(*points.shape) - noise_level
+    noisy_pcd.points = o3d.utility.Vector3dVector(points + noise)
+    return noisy_pcd
+
+def salt_and_pepper_noise(pcd, noise_level=0.02):
     """
-    Apply salt-and-pepper noise to the vertices of a mesh.
+    Apply salt-and-pepper noise to the points of a point cloud.
 
     Parameters:
-    - mesh: The input mesh.
-    - noise_level: The probability of adding noise to each vertex.
+    - pcd: The input point cloud.
+    - noise_level: The probability of adding noise to each point.
 
     Returns:
-    - noisy_mesh: The mesh with salt-and-pepper noise added to its vertices.
+    - noisy_pcd: The point cloud with salt-and-pepper noise added to its points.
     """
-    noisy_mesh = mesh.copy()
-    vertices = np.asarray(noisy_mesh.vertices)
-    noise_mask = np.random.rand(*vertices.shape) < noise_level
-    noise = 2 * noise_level * np.random.rand(*vertices.shape) - noise_level
-    noisy_mesh.vertices = o3d.utility.Vector3dVector(vertices + noise * noise_mask)
-    return noisy_mesh
+    if not isinstance(pcd, o3d.geometry.PointCloud):
+        raise TypeError("Input must be a PointCloud")
 
-
-
-
+    noisy_pcd = copy.deepcopy(pcd)
+    points = np.asarray(noisy_pcd.points)
+    noise_mask = np.random.rand(*points.shape) < noise_level
+    noise = 2 * noise_level * np.random.rand(*points.shape) - noise_level
+    noisy_pcd.points = o3d.utility.Vector3dVector(points + noise * noise_mask)
+    return noisy_pcd

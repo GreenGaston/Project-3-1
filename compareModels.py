@@ -49,6 +49,18 @@ def compare_models(file1, file2):
     }
 
     return comparison_metrics
+def compare_models2(file1, file2):
+    mesh1 = load_model(file1)
+    mesh2 = add_noise(load_model(file2), 0.0006)
+
+    comparison_metrics = {
+        'hausdorff_distance': hausdorff_distance(mesh1, mesh2),
+        'chamfer_distance': chamfer_distance(mesh1, mesh2),
+        'surface_area_difference': surface_area_difference(mesh1, mesh2),
+        'volume_overlap': volume_overlap(mesh1, mesh2)
+    }
+
+    return comparison_metrics
 
 def volume_overlap(mesh1, mesh2):
     return True

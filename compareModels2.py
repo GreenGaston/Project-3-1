@@ -88,8 +88,8 @@ def poisson_reconstruction(input_file, depth):
     mesh.compute_vertex_normals()
 
 
-    vertices_to_remove = densities < np.quantile(densities, 0.01)
-    mesh.remove_vertices_by_mask(vertices_to_remove)
+    # vertices_to_remove = densities < np.quantile(densities, 0.01)
+    # mesh.remove_vertices_by_mask(vertices_to_remove)
 
     return mesh
 
@@ -149,6 +149,8 @@ def TestAllMethods(filename):
     o3d.visualization.draw_geometries([alpha_shape_re])
     o3d.visualization.draw_geometries([ball_pivoting_re])
     
+def testDenoiseMethods(filename):
+    original_mesh = load_model(filename)
 
 
 import numpy as np
