@@ -86,24 +86,23 @@ def poisson_reconstruction(input_file, depth):
     pcd.estimate_normals()
     mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=depth)
     mesh.compute_vertex_normals()
-
-
-    # vertices_to_remove = densities < np.quantile(densities, 0.01)
-    # mesh.remove_vertices_by_mask(vertices_to_remove)
-
+    vertices_to_remove = densities < np.quantile(densities, 0.01)
+    mesh.remove_vertices_by_mask(vertices_to_remove)
     return mesh
 
 def alpha_shape_reconstruction(input_file,  alpha):
     pcd = o3d.io.read_point_cloud(input_file)
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
-
+    mesh.compute_vertex_normals()
     return mesh
+
 def ball_pivoting_reconstruction(input_file, radii):
 
     print("radii= ", radii)
     pcd = o3d.io.read_point_cloud(input_file)
     pcd.estimate_normals()
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector(radii))
+    mesh.compute_vertex_normals()
     return mesh
 
 
@@ -113,7 +112,7 @@ def ball_pivoting_reconstruction(input_file, radii):
 def visualize(original_mesh, reconstructed_mesh):
     original_mesh.paint_uniform_color([1, 0, 0])  # Red
     reconstructed_mesh.paint_uniform_color([0, 1, 0])  # Green
-    o3d.visualization.draw_geometries([original_mesh, reconstructed_mesh])
+    o3d.visualization.draw_geometries([original_mesh, reconstructed_mesh], mesh_show_back_face=True)
 
 
 
@@ -124,16 +123,16 @@ def TestAllMethods(filename):
     # Load and process
     original_mesh = load_model(filename)
     ##point_cloud = sample_point_cloud(original_mesh,)
-
-    poisson_re=poisson_reconstruction(filename, 13)
-    alpha_shape_re=alpha_shape_reconstruction(filename, 0.05)
-    ball_pivoting_re=ball_pivoting_reconstruction(filename, [0.01, 0.05, 0.1])
-
+    print("1")
+    poisson_re=poisson_reconstruction(filename, 12)
+    alpha_shape_re=alpha_shape_reconstruction(filename, 3.5)
+    ball_pivoting_re=ball_pivoting_reconstruction(filename, [0.125, 0.250, 0.5]) #[0.075, 0.125, 0.225]
+    print("2")
     # Evaluation
     score_poisson = evaluate_reconstruction(original_mesh, poisson_re)
     score_alpha_shape = evaluate_reconstruction(original_mesh, alpha_shape_re)
     score_ball_pivoting = evaluate_reconstruction(original_mesh, ball_pivoting_re)
-
+    print("3")
 
     print(f"Poisson Reconstruction: {score_poisson}")
     print(f"Alpha Shape Reconstruction: {score_alpha_shape}")
@@ -145,9 +144,9 @@ def TestAllMethods(filename):
     visualize(original_mesh, ball_pivoting_re)
 
     #visualize the meshes sepperately
-    o3d.visualization.draw_geometries([poisson_re])
-    o3d.visualization.draw_geometries([alpha_shape_re])
-    o3d.visualization.draw_geometries([ball_pivoting_re])
+    o3d.visualization.draw_geometries([poisson_re], mesh_show_back_face=True)
+    o3d.visualization.draw_geometries([alpha_shape_re], mesh_show_back_face=True)
+    o3d.visualization.draw_geometries([ball_pivoting_re], mesh_show_back_face=True)
 
 
 import numpy as np
@@ -200,6 +199,6 @@ def convert_point_to_global_space(point, point_of_measurement, angle_x, angle_y,
 
 # Main Pipeline
 if __name__ == "__main__":
-    original_file = "xyzrgb_dragon.ply"
+    original_file = "Armadillo.ply"
 
     TestAllMethods(original_file)
